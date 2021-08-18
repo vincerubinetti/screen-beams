@@ -1,0 +1,119 @@
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0;
+        z-index: -99;
+      }
+
+      body > * {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+
+      .gradient[data-active="true"] {
+        opacity: 1;
+        transition: opacity 2s ease-out;
+      }
+
+      .gradient[data-active="false"] {
+        opacity: 0;
+        transition: opacity 2s ease-in;
+      }
+
+      .sun {
+        z-index: 1;
+      }
+
+      .sun path {
+        fill: white;
+        opacity: 0.1;
+        animation: rotate linear forwards infinite;
+      }
+
+      .sun:first-of-type path {
+        animation-duration: 180s;
+      }
+
+      .sun:last-of-type path {
+        animation-duration: 360s;
+      }
+
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="sun"><path></path></svg>
+    <svg class="sun"><path></path></svg>
+    <script>
+      // math utils
+      const sin = (degrees) => Math.sin((2 * Math.PI * degrees) / 360);
+      const cos = (degrees) => Math.cos((2 * Math.PI * degrees) / 360);
+
+      // make gradients
+      const colors = [
+        ["#26c6da", "#1976d2"],
+        ["#cddc39", "#4caf50"],
+        ["#ffc107", "#ff5722"],
+        ["#f44336", "#9c27b0"],
+      ];
+      for (const [start, end] of colors) {
+        const div = document.createElement("div");
+        div.classList.add("gradient");
+        div.style.background = `linear-gradient(45deg, ${start}, ${end})`;
+        div.dataset.active = false;
+        document.body.append(div);
+      }
+
+      // cycle through gradients
+      const cycleGradients = () => {
+        const next =
+          document.querySelector(
+            ".gradient[data-active='true'] + .gradient[data-active='false']"
+          ) || document.querySelector(".gradient");
+        document
+          .querySelectorAll(".gradient")
+          .forEach((el) => (el.dataset.active = false));
+        next.dataset.active = true;
+      };
+      window.setInterval(cycleGradients, 15 * 1000);
+      cycleGradients();
+
+      // make sun shapes
+      let d = "";
+      const division = 360 / 12;
+      const radius = 10000;
+      for (let angle = 0; angle < 360; angle += division * 2) {
+        d += `M 0 0`;
+        d += `L ${cos(angle) * radius} ${sin(angle) * radius}`;
+        d += `L ${cos(angle + division) * radius} ${
+          sin(angle + division) * radius
+        }`;
+      }
+      document
+        .querySelectorAll("path")
+        .forEach((el) => el.setAttribute("d", d));
+
+      // size suns
+      const offset = 100;
+      const svgs = document.querySelectorAll("svg");
+      const sizeSuns = () => {
+        const o = offset;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        svgs[0].setAttribute("viewBox", `${o} ${o} ${w} ${h}`);
+        svgs[1].setAttribute("viewBox", `${-o - w} ${-o - h} ${w} ${h}`);
+      };
+      window.addEventListener("resize", sizeSuns);
+      sizeSuns();
+    </script>
+  </body>
+</html>
